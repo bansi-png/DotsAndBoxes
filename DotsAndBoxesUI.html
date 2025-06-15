@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dots & Boxes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 0.75rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            padding: 1rem;
+            max-width: 90vw;
+            max-height: 95vh;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .game-container:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .game-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 0.5rem;
+            backdrop-filter: blur(5px);
+        }
+
+        .scores {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .player-score {
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            min-width: 70px;
+        }
+
+        .player-score:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .player-name {
+            font-size: 0.875rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .player1 .player-name {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .player2 .player-name {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .score {
+            font-size: 1.5rem;
+            font-weight: 900;
+            transition: all 0.3s ease;
+        }
+
+        .player1 .score {
+            color: #2563eb;
+        }
+
+        .player2 .score {
+            color: #dc2626;
+        }
+
+        .current-player {
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .current-player:hover {
+            transform: scale(1.02);
+        }
+
+        .current-label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .current-name {
+            font-size: 1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .current-player1 {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .current-player2 {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .game-over {
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .game-over-title {
+            font-size: 1rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .winner {
+            font-size: 0.875rem;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .game-grid {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 0.75rem;
+            flex: 1;
+            align-items: center;
+        }
+
+        .grid-container {
+            position: relative;
+            display: inline-block;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 0.5rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .grid-container:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        #gameCanvas {
+            border-radius: 0.25rem;
+            background: white;
+            transition: all 0.3s ease;
+            max-width: 100%;
+            height: auto;
+        }
+
+        #gameCanvas:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .instructions {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 0.75rem;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 0.5rem;
+            backdrop-filter: blur(5px);
+        }
+
+        .instructions p {
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .instructions .small {
+            font-size: 0.75rem;
+            color: black;
+            opacity: 0.8;
+        }
+
+        .controls {
+            text-align: center;
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            font-weight: 700;
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.75rem;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+            background: linear-gradient(135deg, #5b21b6, #7c3aed);
+        }
+
+        .reset-btn:active {
+            transform: translateY(0);
+        }
+
+        .score-animation {
+            animation: scoreUp 0.5s ease-out;
+        }
+
+        @keyframes scoreUp {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); color: #10b981; }
+            100% { transform: scale(1); }
+        }
+
+        .line-draw {
+            animation: drawLine 0.3s ease-out;
+        }
+
+        @keyframes drawLine {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .square-complete {
+            animation: squareComplete 0.5s ease-out;
+        }
+
+        @keyframes squareComplete {
+            0% { opacity: 0; transform: scale(0); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+            100% { opacity: 0.6; transform: scale(1); }
+        }
+    </style>
+</head>
+
+<!-- Made by Bansi Jhala
+Student at GLS University, Ahmedabad, Gujarat, India
+email: bansijhala@yahoo.com
+instagram: https://www.instagram.com/bansijhala/
+linkedin: https://www.linkedin.com/in/bansijhala/
+github: https://github.com/bansi-png -->
+
+<body>
+    <div class="game-container">
+        <h1 class="game-title">Dots & Boxes</h1>
+        
+        <div class="game-info">
+            <div class="scores">
+                <div class="player-score player1">
+                    <div class="player-name">Player 1</div>
+                    <div class="score" id="player1Score">0</div>
+                </div>
+                <div class="player-score player2">
+                    <div class="player-name">Player 2</div>
+                    <div class="score" id="player2Score">0</div>
+                </div>
+            </div>
+            
+            <div id="currentPlayerInfo" class="current-player">
+                <div class="current-label">Current Player</div>
+                <div class="current-name current-player1">Player 1</div>
+            </div>
+            
+            <div id="gameOverInfo" class="game-over" style="display: none;">
+                <div class="game-over-title">Game Over!</div>
+                <div class="winner" id="winnerText"></div>
+            </div>
+        </div>
+
+        <div class="game-grid">
+            <div class="grid-container">
+                <canvas id="gameCanvas" width="320" height="320"></canvas>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <p style="color: black;">Click between dots to draw lines. Complete squares to score points!</p>
+            <p class="small">Bansi Jhala<br>GLS University, Ahmedabad, Gujarat</p>
+        </div>
+
+        <div class="controls">
+            <button class="reset-btn" onclick="resetGame()">New Game</button>
+        </div>
+    </div>
+
+    <script>
+        const GRID_SIZE = 6;
+        let currentPlayer = 1;
+        let horizontalLines = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE - 1).fill(false));
+        let verticalLines = Array(GRID_SIZE - 1).fill().map(() => Array(GRID_SIZE).fill(false));
+        let squares = Array(GRID_SIZE - 1).fill().map(() => Array(GRID_SIZE - 1).fill(0));
+        let scores = { player1: 0, player2: 0 };
+        let gameOver = false;
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#f8fafc');
+            gradient.addColorStop(1, '#e2e8f0');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let row = 0; row < GRID_SIZE; row++) {
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    const x = col * 48 + 32;
+                    const y = row * 48 + 32;
+                    
+                    ctx.beginPath();
+                    ctx.fillStyle = '#1f2937';
+                    ctx.arc(x, y, 5, 0, 2 * Math.PI);
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.fillStyle = '#64748b';
+                    ctx.arc(x, y, 3, 0, 2 * Math.PI);
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.arc(x - 1, y - 1, 1.5, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            }
+
+            for (let row = 0; row < GRID_SIZE - 1; row++) {
+                for (let col = 0; col < GRID_SIZE - 1; col++) {
+                    if (squares[row][col] !== 0) {
+                        const gradient = ctx.createLinearGradient(
+                            col * 48 + 35, row * 48 + 35,
+                            col * 48 + 77, row * 48 + 77
+                        );
+                        if (squares[row][col] === 1) {
+                            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+                            gradient.addColorStop(1, 'rgba(37, 99, 235, 0.2)');
+                        } else {
+                            gradient.addColorStop(0, 'rgba(239, 68, 68, 0.4)');
+                            gradient.addColorStop(1, 'rgba(220, 38, 38, 0.2)');
+                        }
+                        ctx.fillStyle = gradient;
+                        ctx.fillRect(col * 48 + 35, row * 48 + 35, 42, 42);
+                        
+                        ctx.strokeStyle = squares[row][col] === 1 ? '#3b82f6' : '#ef4444';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(col * 48 + 35, row * 48 + 35, 42, 42);
+                    }
+                }
+            }
+
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            for (let row = 0; row < GRID_SIZE; row++) {
+                for (let col = 0; col < GRID_SIZE - 1; col++) {
+                    if (horizontalLines[row][col]) {
+                        const gradient = ctx.createLinearGradient(
+                            col * 48 + 35, row * 48 + 32,
+                            (col + 1) * 48 + 29, row * 48 + 32
+                        );
+                        if (horizontalLines[row][col] === 1) {
+                            gradient.addColorStop(0, '#3b82f6');
+                            gradient.addColorStop(1, '#1d4ed8');
+                        } else {
+                            gradient.addColorStop(0, '#ef4444');
+                            gradient.addColorStop(1, '#dc2626');
+                        }
+                        ctx.strokeStyle = gradient;
+                        ctx.beginPath();
+                        ctx.moveTo(col * 48 + 35, row * 48 + 32);
+                        ctx.lineTo((col + 1) * 48 + 29, row * 48 + 32);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            for (let row = 0; row < GRID_SIZE - 1; row++) {
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    if (verticalLines[row][col]) {
+                        const gradient = ctx.createLinearGradient(
+                            col * 48 + 32, row * 48 + 35,
+                            col * 48 + 32, (row + 1) * 48 + 29
+                        );
+                        if (verticalLines[row][col] === 1) {
+                            gradient.addColorStop(0, '#3b82f6');
+                            gradient.addColorStop(1, '#1d4ed8');
+                        } else {
+                            gradient.addColorStop(0, '#ef4444');
+                            gradient.addColorStop(1, '#dc2626');
+                        }
+                        ctx.strokeStyle = gradient;
+                        ctx.beginPath();
+                        ctx.moveTo(col * 48 + 32, row * 48 + 35);
+                        ctx.lineTo(col * 48 + 32, (row + 1) * 48 + 29);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function checkSquare(row, col) {
+            const topLine = horizontalLines[row][col];
+            const bottomLine = horizontalLines[row + 1][col];
+            const leftLine = verticalLines[row][col];
+            const rightLine = verticalLines[row][col + 1];
+            
+            return topLine && bottomLine && leftLine && rightLine;
+        }
+
+        function updateSquares(player) {
+            let completedSquares = 0;
+
+            for (let row = 0; row < GRID_SIZE - 1; row++) {
+                for (let col = 0; col < GRID_SIZE - 1; col++) {
+                    if (squares[row][col] === 0 && checkSquare(row, col)) {
+                        squares[row][col] = player;
+                        completedSquares++;
+                        if (player === 1) {
+                            scores.player1++;
+                        } else {
+                            scores.player2++;
+                        }
+                    }
+                }
+            }
+
+            updateScoreDisplay();
+            
+            const totalSquares = (GRID_SIZE - 1) * (GRID_SIZE - 1);
+            if (scores.player1 + scores.player2 === totalSquares) {
+                gameOver = true;
+                showGameOver();
+            }
+
+            return completedSquares;
+        }
+
+        function updateScoreDisplay() {
+            const player1ScoreEl = document.getElementById('player1Score');
+            const player2ScoreEl = document.getElementById('player2Score');
+            
+            player1ScoreEl.textContent = scores.player1;
+            player2ScoreEl.textContent = scores.player2;
+            
+            player1ScoreEl.classList.add('score-animation');
+            player2ScoreEl.classList.add('score-animation');
+            
+            setTimeout(() => {
+                player1ScoreEl.classList.remove('score-animation');
+                player2ScoreEl.classList.remove('score-animation');
+            }, 500);
+        }
+
+        function updateCurrentPlayer() {
+            const currentPlayerInfo = document.getElementById('currentPlayerInfo');
+            const playerName = currentPlayerInfo.querySelector('.current-name');
+            playerName.textContent = `Player ${currentPlayer}`;
+            playerName.className = `current-name current-player${currentPlayer}`;
+        }
+
+        function showGameOver() {
+            document.getElementById('currentPlayerInfo').style.display = 'none';
+            document.getElementById('gameOverInfo').style.display = 'block';
+            
+            let winner;
+            if (scores.player1 > scores.player2) {
+                winner = 'Player 1 (Blue) Wins!';
+            } else if (scores.player2 > scores.player1) {
+                winner = 'Player 2 (Red) Wins!';
+            } else {
+                winner = "It's a Perfect Tie!";
+            }
+            
+            document.getElementById('winnerText').textContent = winner;
+        }
+
+        function drawHorizontalLine(row, col) {
+            if (horizontalLines[row][col] || gameOver) return;
+
+            horizontalLines[row][col] = currentPlayer;
+            const completedSquares = updateSquares(currentPlayer);
+            
+            if (completedSquares === 0) {
+                currentPlayer = currentPlayer === 1 ? 2 : 1;
+                updateCurrentPlayer();
+            }
+            
+            drawGame();
+        }
+
+        function drawVerticalLine(row, col) {
+            if (verticalLines[row][col] || gameOver) return;
+
+            verticalLines[row][col] = currentPlayer;
+            const completedSquares = updateSquares(currentPlayer);
+            
+            if (completedSquares === 0) {
+                currentPlayer = currentPlayer === 1 ? 2 : 1;
+                updateCurrentPlayer();
+            }
+            
+            drawGame();
+        }
+
+        function getClickPosition(event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            for (let row = 0; row < GRID_SIZE; row++) {
+                for (let col = 0; col < GRID_SIZE - 1; col++) {
+                    const lineX1 = col * 48 + 35;
+                    const lineY1 = row * 48 + 32;
+                    const lineX2 = (col + 1) * 48 + 29;
+                    const lineY2 = row * 48 + 32;
+                    
+                    if (isPointNearLine(x, y, lineX1, lineY1, lineX2, lineY2, 8)) {
+                        drawHorizontalLine(row, col);
+                        return;
+                    }
+                }
+            }
+            
+            for (let row = 0; row < GRID_SIZE - 1; row++) {
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    const lineX1 = col * 48 + 32;
+                    const lineY1 = row * 48 + 35;
+                    const lineX2 = col * 48 + 32;
+                    const lineY2 = (row + 1) * 48 + 29;
+                    
+                    if (isPointNearLine(x, y, lineX1, lineY1, lineX2, lineY2, 8)) {
+                        drawVerticalLine(row, col);
+                        return;
+                    }
+                }
+            }
+        }
+
+        function isPointNearLine(px, py, x1, y1, x2, y2, threshold) {
+            const A = px - x1;
+            const B = py - y1;
+            const C = x2 - x1;
+            const D = y2 - y1;
+
+            const dot = A * C + B * D;
+            const lenSq = C * C + D * D;
+            
+            if (lenSq === 0) return false;
+            
+            const param = dot / lenSq;
+            
+            let xx, yy;
+            if (param < 0) {
+                xx = x1;
+                yy = y1;
+            } else if (param > 1) {
+                xx = x2;
+                yy = y2;
+            } else {
+                xx = x1 + param * C;
+                yy = y1 + param * D;
+            }
+
+            const distance = Math.sqrt((px - xx) * (px - xx) + (py - yy) * (py - yy));
+            return distance <= threshold;
+        }
+
+        function resetGame() {
+            currentPlayer = 1;
+            horizontalLines = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE - 1).fill(false));
+            verticalLines = Array(GRID_SIZE - 1).fill().map(() => Array(GRID_SIZE).fill(false));
+            squares = Array(GRID_SIZE - 1).fill().map(() => Array(GRID_SIZE - 1).fill(0));
+            scores = { player1: 0, player2: 0 };
+            gameOver = false;
+            
+            updateScoreDisplay();
+            updateCurrentPlayer();
+            
+            document.getElementById('currentPlayerInfo').style.display = 'block';
+            document.getElementById('gameOverInfo').style.display = 'none';
+            
+            drawGame();
+        }
+
+        canvas.addEventListener('click', getClickPosition);
+        canvas.style.cursor = 'pointer';
+
+        drawGame();
+    </script>
+</body>
+</html>
